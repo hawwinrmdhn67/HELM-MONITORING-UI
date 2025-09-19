@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Helm Test</title>
+</head>
+<body>
+  <h1>GPS Helm Test</h1>
+  <p id="status">Menunggu lokasi...</p>
+
+  <script>
+    const helmetId = "H01"; // ganti sesuai helm
+    const serverIP = "192.168.1.106"; // ganti dengan IP PC
+    const serverPort = 3000;
+
+    if (!navigator.geolocation) {
+      alert("Browser ini tidak support geolocation");
+    } else {
+      navigator.geolocation.watchPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          document.getElementById("status").textContent =
+            `Lokasi terkini: ${lat}, ${lng}`;
+
+          try {
+            const res = await fetch(
+              `http://${serverIP}:${serverPort}/api/update-location`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ helmet_id: helmetId, lat, lng }),
+              }
+            );
+            const data = await res.json();
+            console.log("Dikirim:", lat, lng, "Response:", data);
+          } catch (err) {
+            console.error("Gagal kirim lokasi:", err);
+            document.getElementById("status").textContent =
+              "Gagal kirim lokasi: " + err;
+          }
+        },
+        (err) => {
+          console.error("Error geolocation:", err);
+          document.getElementById("status").textContent =
+            "Error geolocation: " + err.message;
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      );
+    }
+  </script>
+</body>
+</html>

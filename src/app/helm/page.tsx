@@ -36,17 +36,15 @@ export default function HelmPage() {
   };
 
     fetchLocations();
-    const interval = setInterval(fetchLocations, 3000); // refresh tiap 3 detik
+    const interval = setInterval(fetchLocations, 3000); 
     return () => clearInterval(interval);
   }, []);
 
-  // Cek status online/offline
   const status = (loc: LocationWithId) => {
     const diff = Date.now() - loc.updatedAt;
     return diff < 10000 ? "Online" : "Offline";
   };
 
-  // Format waktu
   const formatTime = (timestamp: number) =>
     new Date(timestamp).toLocaleTimeString();
 

@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -50,7 +49,6 @@ export default function MapLeaflet() {
     ([id, loc]) => ({ id, ...loc })
   );
 
-  // Center mengikuti marker pertama (atau default jika kosong)
   const center: [number, number] =
     locationsArray.length > 0
       ? [locationsArray[0].lat, locationsArray[0].lng]

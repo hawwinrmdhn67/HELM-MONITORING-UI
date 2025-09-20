@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const incidents = [
   { id: 1, name: "Sensor Error", status: "Critical", time: "10:30 AM" },
   { id: 2, name: "Helmet Disconnected", status: "Warning", time: "11:15 AM" },
-  { id: 3, name: "Battery Low", status: "Normal", time: "01:45 PM" },
+  { id: 4, name: "Map Connected", status: "Normal", time: "01:45 PM" },
 ];
 
 export default function IncidentTable() {

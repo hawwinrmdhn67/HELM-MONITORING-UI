@@ -42,7 +42,7 @@ export default function MapLeaflet() {
     };
 
     fetchLocations();
-    const interval = setInterval(fetchLocations, 5000);
+    const interval = setInterval(fetchLocations, 3000);
     return () => clearInterval(interval);
   }, []);
 

@@ -24,11 +24,10 @@ export default function HomePage() {
         </motion.h1>
 
         {/* Status Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatusCard title="Incident" value="5 Active" color="bg-red-500" />
-          <StatusCard title="GPS Tracker" value="12 Online" color="bg-green-500" />
-          <StatusCard title="Helm Status" value="7 Connected" color="bg-blue-500" />
-          <StatusCard title="Monitoring" value="Running" color="bg-purple-500" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatusCard title="GPS Tracker" value="1 Online" color="bg-green-500" />
+          <StatusCard title="Helm Status" value="3 Connected" color="bg-blue-500" />
+          <StatusCard title="Incident" value="3 Active" color="bg-red-500" />
         </div>
 
         {/* Map */}

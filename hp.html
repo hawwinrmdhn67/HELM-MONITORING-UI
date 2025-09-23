@@ -4,15 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Helm Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <h1>GPS Helm Test</h1>
+  <button onclick="setHelmStatus('On')">Set Helm ON</button>
+  <button onclick="setHelmStatus('Off')">Set Helm OFF</button>
+  <button onclick="setHelmStatus('ALERT')">Simulasi Incident</button>
   <p id="status">Menunggu lokasi...</p>
 
   <script>
-    const helmetId = "H01"; // ganti sesuai helm
-    const serverIP = "192.168.1.106"; // ganti dengan IP PC
-    const serverPort = 3000;
+    const helmetId = "H01"; // ID unik helm
+    const serverIP = "192.168.1.106"; // ganti dengan IP laptop/PC kamu
+    const serverPort = 3001; // port Next.js
+    let helmStatus = "On"; // default status helm
+
+    function setHelmStatus(status) {
+      helmStatus = status;
+      document.getElementById("status").textContent =
+        `Status helm diubah menjadi: ${helmStatus}`;
+    }
 
     if (!navigator.geolocation) {
       alert("Browser ini tidak support geolocation");
@@ -23,7 +48,7 @@
           const lng = position.coords.longitude;
 
           document.getElementById("status").textContent =
-            `Lokasi terkini: ${lat}, ${lng}`;
+            `Lokasi: ${lat}, ${lng} | Helm Status: ${helmStatus}`;
 
           try {
             const res = await fetch(
@@ -31,21 +56,28 @@
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ helmet_id: helmetId, lat, lng }),
+                body: JSON.stringify({
+                  helmet_id: helmetId,
+                  lat,
+                  lng,
+                  helm_status: helmStatus,
+                  source: "HP", // penting: tandai kalau data dari HP
+                }),
               }
             );
+
             const data = await res.json();
-            console.log("Dikirim:", lat, lng, "Response:", data);
+            console.log("Dikirim:", { helmetId, lat, lng, helmStatus }, "Res:", data);
           } catch (err) {
             console.error("Gagal kirim lokasi:", err);
             document.getElementById("status").textContent =
-              "Gagal kirim lokasi: " + err;
+              "❌ Gagal kirim lokasi: " + err;
           }
         },
         (err) => {
           console.error("Error geolocation:", err);
           document.getElementById("status").textContent =
-            "Error geolocation: " + err.message;
+            "❌ Error geolocation: " + err.message;
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
       );

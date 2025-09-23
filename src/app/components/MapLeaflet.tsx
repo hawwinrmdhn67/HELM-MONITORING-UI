@@ -31,7 +31,7 @@ export default function MapLeaflet() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await fetch("http://192.168.1.106:3000/api/update-location"); // ganti IP PC/server
+        const res = await fetch("http://192.168.1.106:3001/api/update-location"); // ganti IP PC/server
         const data: Record<string, Location> = await res.json();
         console.log("Data fetch lokasi:", data);
         setLocations(data);
@@ -69,7 +69,7 @@ export default function MapLeaflet() {
           <Popup>
             Helm {loc.id} <br />
             Updated: {new Date(loc.updatedAt).toLocaleTimeString()} <br />
-            Status: {Date.now() - loc.updatedAt < 10000 ? "Online" : "Offline"}
+            Status: {Date.now() - loc.updatedAt < 1000 ? "Online" : "Offline"}
           </Popup>
         </Marker>
       ))}

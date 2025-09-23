@@ -1,62 +1,153 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const incidents = [
-  { id: 1, name: "Sensor Error", status: "Critical", time: "10:30 AM" },
-  { id: 2, name: "Helmet Disconnected", status: "Warning", time: "11:15 AM" },
-  { id: 4, name: "Map Connected", status: "Normal", time: "01:45 PM" },
-];
+interface Incident {
+  id: string;
+  lat?: number;
+  lng?: number;
+  helm_status?: "On" | "Off" | "ALERT" | string;
+  online: boolean;
+  incident: boolean;
+  updatedAt: number;
+  source?: "HP" | "Arduino";
+  acceleration?: number; // ✅ Tambahin acceleration
+}
 
-export default function IncidentTable() {
+export default function IncidentAlert() {
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Normalisasi status agar konsisten
+  const normalizeStatus = (status?: string) => {
+    if (!status) return "Unknown";
+    const s = status.toLowerCase();
+    if (s === "on") return "On";
+    if (s === "alert") return "ALERT";
+    if (s === "off") return "Off";
+    return "Unknown";
+  };
+
+  // Ambil data dari backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("http://192.168.1.106:3001/api/update-location");
+        const data = await res.json();
+
+        const arr: Incident[] = Object.entries(data).map(([id, obj]: any) => ({
+          id,
+          lat: obj.lat,
+          lng: obj.lng,
+          helm_status: normalizeStatus(obj.helm_status),
+          online: !!obj.online,
+          incident: !!obj.incident,
+          updatedAt: obj.updatedAt,
+          source: obj.source,
+          acceleration: obj.acceleration, // ✅ Ambil acceleration
+        }));
+
+        setIncidents(arr);
+      } catch (err) {
+        console.error("Failed to fetch incidents:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Badge styling
+  const statusBadge = (helm_status?: string) =>
+    helm_status === "On"
+      ? "bg-green-500/20 text-green-400"
+      : helm_status === "ALERT"
+      ? "bg-red-500/20 text-red-400 animate-pulse"
+      : "bg-gray-500/20 text-gray-400";
+
+  const onlineBadge = (online: boolean) =>
+    online ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400";
+
+  const incidentBadge = (incident: boolean) =>
+    incident ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-700/20 text-gray-400";
+
+  const formatTime = (ts?: number) =>
+    ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "-";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="bg-black/30 backdrop-blur-md border border-white/10 p-4 md:p-6 rounded-2xl shadow-lg"
+      className="bg-black/30 backdrop-blur-md border border-white/10 p-4 md:p-6 rounded-2xl shadow-lg space-y-4"
     >
-      <h2 className="text-lg md:text-xl font-semibold mb-4">Incident Logs</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm md:text-base">
-          <thead>
-            <tr className="bg-white/10 text-left">
-              <th className="p-3">ID</th>
-              <th className="p-3">Incident</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {incidents.map((item, index) => (
-              <tr
-                key={item.id}
-                className={`border-b border-white/10 ${
-                  index % 2 === 0 ? "bg-white/5" : "bg-transparent"
-                } hover:bg-white/20 transition`}
+      {loading ? (
+        <p className="text-gray-400">Loading incidents...</p>
+      ) : incidents.length === 0 ? (
+        <p className="text-gray-400">Belum ada incident...</p>
+      ) : (
+        incidents.map((item) => (
+          <div
+            key={item.id}
+            className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition 
+              ${item.helm_status === "ALERT" ? "bg-red-500/10 border border-red-500/30" : "bg-white/5"}
+            `}
+          >
+            {/* Info utama */}
+            <div className="flex flex-col space-y-1">
+              <span className="text-gray-200 font-medium">
+                Helmet {item.id}{" "}
+                <span className="text-xs text-gray-400">
+                  {item.source ? `(${item.source})` : ""}
+                </span>
+              </span>
+              <span className="text-gray-400 text-sm">
+                ⏱ {formatTime(item.updatedAt)}
+              </span>
+              {item.lat !== undefined && item.lng !== undefined && (
+                <span className="text-gray-400 text-sm">
+                  📍 {item.lat.toFixed(6)}, {item.lng.toFixed(6)}
+                </span>
+              )}
+              {item.acceleration !== undefined && (
+                <span className="text-gray-400 text-sm">
+                  🌀 Acceleration: {item.acceleration.toFixed(2)} m/s²
+                </span>
+              )}
+            </div>
+
+            {/* Status badges */}
+            <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+              <span
+                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${statusBadge(
+                  item.helm_status
+                )}`}
               >
-                <td className="p-3">{item.id}</td>
-                <td className="p-3">{item.name}</td>
-                <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-white text-xs md:text-sm ${
-                      item.status === "Critical"
-                        ? "bg-red-500"
-                        : item.status === "Warning"
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-                <td className="p-3">{item.time}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                {item.helm_status}
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${onlineBadge(
+                  item.online
+                )}`}
+              >
+                {item.online ? "Online" : "Offline"}
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${incidentBadge(
+                  item.incident
+                )}`}
+              >
+                {item.incident ? "Incident" : "-"}
+              </span>
+            </div>
+          </div>
+        ))
+      )}
     </motion.div>
   );
 }

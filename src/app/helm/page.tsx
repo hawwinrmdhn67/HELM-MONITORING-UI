@@ -17,7 +17,7 @@ export default function HelmPage() {
   useEffect(() => {
     const fetchLocations = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/update-location"); 
+      const res = await fetch("http://localhost:3001/api/update-location"); 
       const data = await res.json();
 
       const arr: LocationWithId[] = Object.entries(data).map(
@@ -36,13 +36,13 @@ export default function HelmPage() {
   };
 
     fetchLocations();
-    const interval = setInterval(fetchLocations, 3000); 
+    const interval = setInterval(fetchLocations, 1000); 
     return () => clearInterval(interval);
   }, []);
 
   const status = (loc: LocationWithId) => {
     const diff = Date.now() - loc.updatedAt;
-    return diff < 10000 ? "Online" : "Offline";
+    return diff < 3000 ? "Online" : "Offline";
   };
 
   const formatTime = (timestamp: number) =>
@@ -63,9 +63,10 @@ export default function HelmPage() {
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="bg-black/30 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-lg space-y-4"
+          className="bg-black/30 backdrop-blur-md border border-white/10 p-4 md:p-6 rounded-2xl shadow-lg space-y-4"
         >
           {locations.length === 0 ? (
             <p className="text-gray-400">Belum ada helm terhubung...</p>

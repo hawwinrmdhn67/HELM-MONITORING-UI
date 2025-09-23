@@ -17,7 +17,6 @@ export default function IncidentPage() {
         >
           Incident Logs
         </motion.h1>
-
         <IncidentTable />
       </main>
     </div>

@@ -42,7 +42,7 @@ export default function HomePage() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 2000); // refresh tiap 2 detik
+    const interval = setInterval(fetchData, 1000); // refresh tiap 2 detik
     return () => clearInterval(interval);
   }, []);
 

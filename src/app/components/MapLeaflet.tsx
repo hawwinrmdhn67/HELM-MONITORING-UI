@@ -19,6 +19,8 @@ interface Location {
   lat: number;
   lng: number;
   updatedAt: number;
+  status: "Online" | "Offline";
+  incident: boolean;
 }
 
 interface LocationWithId extends Location {
@@ -55,10 +57,10 @@ export default function MapLeaflet() {
       : [-7.250445, 112.768845];
 
   return (
-     <MapContainer
-      center={[-7.250445, 112.768845]}
-      zoom={7}                        
-      style={{ height: '100%', width: '100%' }}
+    <MapContainer
+      center={center}
+      zoom={7}
+      style={{ height: "100%", width: "100%" }}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -67,9 +69,18 @@ export default function MapLeaflet() {
       {locationsArray.map((loc) => (
         <Marker key={loc.id} position={[loc.lat, loc.lng]}>
           <Popup>
-            Helm {loc.id} <br />
+            <b>Helm {loc.id}</b> <br />
             Updated: {new Date(loc.updatedAt).toLocaleTimeString()} <br />
-            Status: {Date.now() - loc.updatedAt < 1000 ? "Online" : "Offline"}
+            Status:{" "}
+            <span style={{ color: loc.status === "Online" ? "green" : "red" }}>
+              {loc.status}
+            </span>
+            <br />
+            {loc.incident && (
+              <span style={{ color: "orange", fontWeight: "bold" }}>
+                ⚠️ Incident Detected!
+              </span>
+            )}
           </Popup>
         </Marker>
       ))}

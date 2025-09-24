@@ -22,7 +22,7 @@ const data = [
 export default function MonitoringChart() {
   return (
     <div className="bg-black/30 backdrop-blur-md border border-white/10 p-4 md:p-6 rounded-2xl shadow-lg w-full h-[300px] md:h-[350px]">
-      <h2 className="text-lg md:text-xl font-semibold mb-4">System Monitoring</h2>
+      <h2 className="text-lg md:text-xl font-semibold mb-4">Monitoring Charts</h2>
       <ResponsiveContainer width="100%" height="80%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#555" />

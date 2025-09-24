@@ -13,6 +13,7 @@ interface Location {
   description?: string;
   incident?: boolean;
   updatedAt: number;
+  source?: "HP" | "Arduino";
 }
 
 const locations: Record<string, Location> = {};
@@ -51,14 +52,21 @@ app.post("/api/update-location", (req, res) => {
       speed: speed ?? oldData.speed,
       description: description || oldData.description,
       updatedAt: Date.now(),
+      source: "HP",
     };
   } else if (source === "Arduino") {
     // Arduino update sensor & incident
+    const isIncident =
+      helm_status === "ALERT" ||
+      (acceleration ? acceleration > 1.5 : oldData.incident);
+
     locations[helmet_id] = {
       ...oldData,
       acceleration: acceleration ?? oldData.acceleration,
-      incident: acceleration ? acceleration > 1.5 : oldData.incident, // contoh threshold
+      helm_status: helm_status || oldData.helm_status || "On",
+      incident: isIncident, // ✅ incident bertahan sampai Arduino reset
       updatedAt: Date.now(),
+      source: "Arduino",
     };
   }
 

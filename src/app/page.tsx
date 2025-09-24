@@ -21,16 +21,28 @@ export default function HomePage() {
 
         const values = Object.values(data) as any[];
 
-        setGpsOnline(values.filter((d) => d.online === 1).length);
-        setHelmConnected(values.filter((d) => d.helm_status === "ON").length);
-        setIncidentCount(values.filter((d) => d.incident === 1).length);
+        // ✅ GPS dari data yang punya lat+lng dan online
+        const gpsFromHp = values.filter(
+          (d) => d.lat !== undefined && d.lng !== undefined && d.online
+        ).length;
+        setGpsOnline(gpsFromHp);
+
+        // ✅ Helm Status dari data yang punya helm_status = "On" dan online
+        const helmFromHp = values.filter(
+          (d) => d.helm_status === "On" && d.online
+        ).length;
+        setHelmConnected(helmFromHp);
+
+        // ✅ Incident dari Arduino (sudah dihitung di backend → field incident = true)
+        const incidentsFromArduino = values.filter((d) => d.incident).length;
+        setIncidentCount(incidentsFromArduino);
       } catch (err) {
         console.error("Gagal fetch lokasi:", err);
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 1000); // refresh tiap 5 detik
+    const interval = setInterval(fetchData, 2000); // refresh tiap 2 detik
     return () => clearInterval(interval);
   }, []);
 
@@ -51,9 +63,21 @@ export default function HomePage() {
 
         {/* Status Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatusCard title="GPS Tracker" value={`${gpsOnline} Online`} color="bg-green-500" />
-          <StatusCard title="Helm Status" value={`${helmConnected} Connected`} color="bg-blue-500" />
-          <StatusCard title="Incident" value={`${incidentCount} Active`} color="bg-red-500" />
+          <StatusCard
+            title="GPS Tracker"
+            value={`${gpsOnline} Online`}
+            color="bg-green-500"
+          />
+          <StatusCard
+            title="Helm Status"
+            value={`${helmConnected} Connected`}
+            color="bg-blue-500"
+          />
+          <StatusCard
+            title="Incident"
+            value={`${incidentCount} Active`}
+            color="bg-red-500"
+          />
         </div>
 
         {/* Map */}

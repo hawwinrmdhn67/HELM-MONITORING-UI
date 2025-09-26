@@ -14,37 +14,35 @@ export default function HomePage() {
   const [incidentCount, setIncidentCount] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("http://192.168.1.106:3001/api/update-location");
-        const data = await res.json();
+  const fetchData = async () => {
+    try {
+      const res = await fetch("http://192.168.1.106:3001/api/update-location");
+      const data = await res.json();
 
-        const values = Object.values(data) as any[];
+      const values = Object.values(data) as any[];
 
-        // ✅ GPS dari data yang punya lat+lng dan online
-        const gpsFromHp = values.filter(
-          (d) => d.lat !== undefined && d.lng !== undefined && d.online
-        ).length;
-        setGpsOnline(gpsFromHp);
+      // ✅ GPS dari data yang punya lat+lng dan online
+      const gpsFromHp = values.filter(
+        (d) => d.lat !== undefined && d.lng !== undefined && d.online
+      ).length;
+      setGpsOnline(gpsFromHp);
 
-        // ✅ Helm Status dari data yang punya helm_status = "On" dan online
-        const helmFromHp = values.filter(
-          (d) => d.helm_status === "On" && d.online
-        ).length;
-        setHelmConnected(helmFromHp);
+      // ✅ Helm Status dari semua device yang helm_status = "On" (tidak tergantung GPS)
+      const helmFromHp = values.filter((d) => d.helm_status === "On").length;
+      setHelmConnected(helmFromHp);
 
-        // ✅ Incident dari Arduino (sudah dihitung di backend → field incident = true)
-        const incidentsFromArduino = values.filter((d) => d.incident).length;
-        setIncidentCount(incidentsFromArduino);
-      } catch (err) {
-        console.error("Gagal fetch lokasi:", err);
-      }
-    };
+      // ✅ Incident dari Arduino (sudah dihitung di backend → field incident = true)
+      const incidentsFromArduino = values.filter((d) => d.incident).length;
+      setIncidentCount(incidentsFromArduino);
+    } catch (err) {
+      console.error("Gagal fetch lokasi:", err);
+    }
+  };
 
-    fetchData();
-    const interval = setInterval(fetchData, 1000); // refresh tiap 2 detik
-    return () => clearInterval(interval);
-  }, []);
+  fetchData();
+  const interval = setInterval(fetchData, 1000); // refresh tiap 1 detik
+  return () => clearInterval(interval);
+}, []);
 
   return (
     <div className="min-h-screen flex flex-col">

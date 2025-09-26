@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GPS Helm Test</title>
+  <title>GPS Helm Control</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,17 +21,16 @@
   </style>
 </head>
 <body>
-  <h1>GPS Helm Test</h1>
+  <h1>GPS Helm Control</h1>
   <button onclick="setHelmStatus('On')">Set Helm ON</button>
   <button onclick="setHelmStatus('Off')">Set Helm OFF</button>
-  <button onclick="setHelmStatus('ALERT')">Simulasi Incident</button>
   <p id="status">Menunggu lokasi...</p>
 
   <script>
     const helmetId = "H01"; // ID unik helm
-    const serverIP = "192.168.1.106"; // ganti dengan IP laptop/PC kamu
-    const serverPort = 3001; // port Next.js
-    let helmStatus = "On"; // default status helm
+    const serverIP = "192.168.1.106"; // ganti sesuai IP server kamu
+    const serverPort = 3001; 
+    let helmStatus = "On"; // default
 
     function setHelmStatus(status) {
       helmStatus = status;
@@ -61,7 +60,7 @@
                   lat,
                   lng,
                   helm_status: helmStatus,
-                  source: "HP", // penting: tandai kalau data dari HP
+                  source: "HP"
                 }),
               }
             );

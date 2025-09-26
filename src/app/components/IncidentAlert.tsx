@@ -36,19 +36,53 @@ export default function IncidentAlert() {
         const res = await fetch("http://192.168.1.106:3001/api/update-location");
         const data = await res.json();
 
-        const arr: Incident[] = Object.entries(data).map(([id, obj]: any) => ({
-          id,
-          lat: obj.lat,
-          lng: obj.lng,
-          helm_status: normalizeStatus(obj.helm_status),
-          online: !!obj.online,
-          incident: !!obj.incident,
-          updatedAt: obj.updatedAt,
-          source: obj.source,
-          acceleration: obj.acceleration, // ✅ Ambil acceleration
-        }));
+        // Gabungkan data dari HP & Arduino berdasarkan id
+        const merged: Record<string, Incident> = {};
 
-        setIncidents(arr);
+        Object.entries(data).forEach(([id, obj]: any) => {
+          if (!merged[id]) {
+            merged[id] = {
+              id,
+              lat: obj.lat,
+              lng: obj.lng,
+              helm_status: normalizeStatus(obj.helm_status),
+              online: !!obj.online,
+              incident: !!obj.incident,
+              updatedAt: obj.updatedAt,
+              source: obj.source,
+              acceleration: obj.acceleration,
+            };
+          } else {
+            merged[id] = {
+              ...merged[id],
+              lat: obj.lat ?? merged[id].lat,
+              lng: obj.lng ?? merged[id].lng,
+              // ✅ kalau salah satu status ALERT → tetap ALERT
+              helm_status:
+                normalizeStatus(obj.helm_status) === "ALERT" || merged[id].helm_status === "ALERT"
+                  ? "ALERT"
+                  : normalizeStatus(obj.helm_status) || merged[id].helm_status,
+              // ✅ kalau salah satu incident true → tetap true
+              incident: merged[id].incident || !!obj.incident,
+              acceleration: obj.acceleration ?? merged[id].acceleration,
+              updatedAt: Math.max(obj.updatedAt, merged[id].updatedAt),
+              source: merged[id].source === "HP" ? "HP + Arduino" : obj.source,
+            };
+          }
+        });
+
+        // Sinkronisasi helm_status dengan online & incident
+        const finalArr = Object.values(merged).map((item) => {
+          let status = normalizeStatus(item.helm_status);
+
+          if (item.incident) {
+            status = "ALERT"; 
+          }
+
+          return { ...item, helm_status: status };
+        });
+
+        setIncidents(finalArr);
       } catch (err) {
         console.error("Failed to fetch incidents:", err);
       } finally {
@@ -102,8 +136,7 @@ export default function IncidentAlert() {
             <div className="flex flex-col space-y-1">
               <span className="text-gray-200 font-medium">
                 Helmet {item.id}{" "}
-                <span className="text-xs text-gray-400">
-                  {item.source ? `(${item.source})` : ""}
+                <span className="text-gray-200 font-medium">
                 </span>
               </span>
               <span className="text-gray-400 text-sm">

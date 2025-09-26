@@ -21,7 +21,7 @@ const locations: Record<string, Location> = {};
 app.use(cors());
 app.use(express.json());
 
-// ✅ POST: update lokasi
+// ✅ POST: update lokasi/status
 app.post("/api/update-location", (req, res) => {
   const {
     helmet_id,
@@ -43,19 +43,20 @@ app.post("/api/update-location", (req, res) => {
   const oldData = locations[helmet_id] || {};
 
   if (source === "HP") {
-    // HP update posisi & helm status
-    locations[helmet_id] = {
-      ...oldData,
-      lat: lat ?? oldData.lat,
-      lng: lng ?? oldData.lng,
-      helm_status: helm_status || oldData.helm_status || "UNKNOWN",
-      speed: speed ?? oldData.speed,
-      description: description || oldData.description,
-      updatedAt: Date.now(),
-      source: "HP",
-    };
+  locations[helmet_id] = {
+    ...oldData,
+    lat: lat ?? oldData.lat,
+    lng: lng ?? oldData.lng,
+    speed: speed ?? oldData.speed,
+    description: description || oldData.description,
+    helm_status: helm_status || oldData.helm_status || "Off", // ✅ update dari HP
+    incident: oldData.incident ?? false,
+    updatedAt: Date.now(),
+    source: "HP",
+  };
+
   } else if (source === "Arduino") {
-    // Arduino update sensor & incident
+    // Arduino update sensor & incident (sumber utama)
     const isIncident =
       helm_status === "ALERT" ||
       (acceleration ? acceleration > 1.5 : oldData.incident);
@@ -63,8 +64,10 @@ app.post("/api/update-location", (req, res) => {
     locations[helmet_id] = {
       ...oldData,
       acceleration: acceleration ?? oldData.acceleration,
-      helm_status: helm_status || oldData.helm_status || "On",
-      incident: isIncident, // ✅ incident bertahan sampai Arduino reset
+      helm_status: isIncident
+        ? "ALERT"
+        : (helm_status || oldData.helm_status || "On"),
+      incident: isIncident,
       updatedAt: Date.now(),
       source: "Arduino",
     };
@@ -87,6 +90,24 @@ app.get("/api/update-location", (_req, res) => {
     ])
   );
   res.json(data);
+});
+
+// ✅ GET: status ringkas (buat card dashboard)
+app.get("/api/status", (_req, res) => {
+  const now = Date.now();
+  let gpsOnline = 0;
+  let helmConnected = 0;
+
+  Object.values(locations).forEach((loc) => {
+    const isOnline = now - loc.updatedAt < 3000;
+    if (isOnline && loc.source === "HP") gpsOnline++;
+    if (isOnline && loc.source === "Arduino") helmConnected++;
+  });
+
+  res.json({
+    gps_online: gpsOnline,
+    helm_connected: helmConnected,
+  });
 });
 
 app.listen(PORT, () => {

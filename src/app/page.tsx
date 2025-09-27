@@ -20,18 +20,14 @@ export default function HomePage() {
       const data = await res.json();
 
       const values = Object.values(data) as any[];
-
-      // ✅ GPS dari data yang punya lat+lng dan online
       const gpsFromHp = values.filter(
         (d) => d.lat !== undefined && d.lng !== undefined && d.online
       ).length;
       setGpsOnline(gpsFromHp);
 
-      // ✅ Helm Status dari semua device yang helm_status = "On" (tidak tergantung GPS)
       const helmFromHp = values.filter((d) => d.helm_status === "On").length;
       setHelmConnected(helmFromHp);
 
-      // ✅ Incident dari Arduino (sudah dihitung di backend → field incident = true)
       const incidentsFromArduino = values.filter((d) => d.incident).length;
       setIncidentCount(incidentsFromArduino);
     } catch (err) {
@@ -40,9 +36,9 @@ export default function HomePage() {
   };
 
   fetchData();
-  const interval = setInterval(fetchData, 1000); // refresh tiap 1 detik
+  const interval = setInterval(fetchData, 1000); 
   return () => clearInterval(interval);
-}, []);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">

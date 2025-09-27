@@ -12,14 +12,12 @@ interface Incident {
   incident: boolean;
   updatedAt: number;
   source?: "HP" | "Arduino";
-  acceleration?: number; // ✅ Tambahin acceleration
+  acceleration?: number; 
 }
 
 export default function IncidentAlert() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Normalisasi status agar konsisten
   const normalizeStatus = (status?: string) => {
     if (!status) return "Unknown";
     const s = status.toLowerCase();
@@ -29,14 +27,11 @@ export default function IncidentAlert() {
     return "Unknown";
   };
 
-  // Ambil data dari backend
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch("http://192.168.1.106:3001/api/update-location");
         const data = await res.json();
-
-        // Gabungkan data dari HP & Arduino berdasarkan id
         const merged: Record<string, Incident> = {};
 
         Object.entries(data).forEach(([id, obj]: any) => {
@@ -57,12 +52,10 @@ export default function IncidentAlert() {
               ...merged[id],
               lat: obj.lat ?? merged[id].lat,
               lng: obj.lng ?? merged[id].lng,
-              // ✅ kalau salah satu status ALERT → tetap ALERT
               helm_status:
                 normalizeStatus(obj.helm_status) === "ALERT" || merged[id].helm_status === "ALERT"
                   ? "ALERT"
                   : normalizeStatus(obj.helm_status) || merged[id].helm_status,
-              // ✅ kalau salah satu incident true → tetap true
               incident: merged[id].incident || !!obj.incident,
               acceleration: obj.acceleration ?? merged[id].acceleration,
               updatedAt: Math.max(obj.updatedAt, merged[id].updatedAt),
@@ -71,7 +64,6 @@ export default function IncidentAlert() {
           }
         });
 
-        // Sinkronisasi helm_status dengan online & incident
         const finalArr = Object.values(merged).map((item) => {
           let status = normalizeStatus(item.helm_status);
 
@@ -95,7 +87,6 @@ export default function IncidentAlert() {
     return () => clearInterval(interval);
   }, []);
 
-  // Badge styling
   const statusBadge = (helm_status?: string) =>
     helm_status === "On"
       ? "bg-green-500/20 text-green-400"

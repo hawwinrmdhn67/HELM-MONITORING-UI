@@ -5,6 +5,7 @@ export interface SourceData {
   lng: number;
   helm_status: "On" | "Off" | "ALERT";
   updatedAt: number;
+  acceleration?: number; 
 }
 
 export interface HelmetLocation {
@@ -15,8 +16,6 @@ export interface HelmetLocation {
 }
 
 export let locations: Record<string, HelmetLocation> = {};
-
-// ✅ handle preflight (CORS)
 export async function OPTIONS() {
   return NextResponse.json(
     {},
@@ -30,7 +29,6 @@ export async function OPTIONS() {
   );
 }
 
-// ✅ menerima data dari HP / Arduino
 export async function POST(req: Request) {
   try {
     const {
@@ -39,12 +37,14 @@ export async function POST(req: Request) {
       lng,
       helm_status,
       source,
+      acceleration,
     }: {
       helmet_id: string;
       lat: number;
       lng: number;
       helm_status?: "On" | "Off" | "ALERT";
       source?: "HP" | "Arduino";
+      acceleration?: number;
     } = await req.json();
 
     if (!helmet_id || lat === undefined || lng === undefined) {
@@ -65,6 +65,7 @@ export async function POST(req: Request) {
       lng,
       helm_status: helm_status || "Off",
       updatedAt: Date.now(),
+      acceleration: acceleration || 0, 
     };
 
     return NextResponse.json(
@@ -80,7 +81,6 @@ export async function POST(req: Request) {
   }
 }
 
-// ✅ ambil status helm
 export async function GET() {
   try {
     const now = Date.now();
@@ -89,12 +89,8 @@ export async function GET() {
       Object.entries(locations).map(([id, loc]) => {
         const hpOnline = loc.hp ? now - loc.hp.updatedAt < 5000 : false;
         const arduinoOnline = loc.arduino ? now - loc.arduino.updatedAt < 5000 : false;
-
-        // status final: kalau salah satu online → Online
         const status: "Online" | "Offline" =
           hpOnline || arduinoOnline ? "Online" : "Offline";
-
-        // ambil update terbaru
         const latest = [loc.hp, loc.arduino]
           .filter(Boolean)
           .sort((a, b) => (b!.updatedAt - a!.updatedAt))[0];
@@ -107,6 +103,7 @@ export async function GET() {
             status,
             incident: loc.arduino?.helm_status === "ALERT" && arduinoOnline,
             updatedAt: latest?.updatedAt,
+            acceleration: latest?.acceleration ?? 0, 
           },
         ];
       })

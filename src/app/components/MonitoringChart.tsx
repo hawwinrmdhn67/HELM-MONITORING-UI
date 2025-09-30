@@ -9,6 +9,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
+  Label,
 } from "recharts";
 
 interface DataPoint {
@@ -26,7 +28,7 @@ export default function MonitoringChart() {
         const json = await res.json();
         const entries = Object.values(json) as any[];
         if (entries.length === 0) return;
-        
+
         const latest = entries[0];
         const updated =
           typeof latest.updatedAt === "number"
@@ -53,20 +55,23 @@ export default function MonitoringChart() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 2000); 
+    const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
+  const values = data.map((d) => d.value);
+  const avg = values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : "0";
+  const max = values.length ? Math.max(...values).toFixed(2) : "0";
+  const min = values.length ? Math.min(...values).toFixed(2) : "0";
+
   return (
-    <div className="bg-black/30 backdrop-blur-md border border-white/10 p-3 sm:p-5 rounded-2xl shadow-lg w-full h-[220px] sm:h-[320px]">
+    <div className="bg-black/30 backdrop-blur-md border border-white/10 p-4 sm:p-6 rounded-2xl shadow-lg w-full h-[260px] sm:h-[360px] flex flex-col">
       <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-        Monitoring Chart Helm
+        Monitoring Chart
       </h2>
-      <ResponsiveContainer width="100%" height="85%">
-        <LineChart
-          data={data}
-          margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
-        >
+
+      <ResponsiveContainer width="100%" height="80%">
+        <LineChart data={data} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#444" />
           <XAxis
             dataKey="time"
@@ -74,19 +79,36 @@ export default function MonitoringChart() {
             tick={{ fontSize: 10 }}
             interval="preserveEnd"
           />
-          <YAxis stroke="#ccc" tick={{ fontSize: 10 }} />
+          <YAxis stroke="#ccc" tick={{ fontSize: 10 }}>
+            <Label
+              value="Acceleration (m/s²)"
+              angle={-90}
+              position="insideLeft"
+              style={{ textAnchor: "middle", fill: "#ccc", fontSize: 11 }}
+            />
+          </YAxis>
           <Tooltip
             contentStyle={{ backgroundColor: "#1f2937", borderRadius: "8px" }}
           />
+          <Legend wrapperStyle={{ fontSize: "12px", color: "#fff" }} />
           <Line
             type="monotone"
             dataKey="value"
+            name="Acceleration"
             stroke="#60a5fa"
             strokeWidth={3}
             dot={{ r: 3 }}
+            activeDot={{ r: 5 }}
           />
         </LineChart>
       </ResponsiveContainer>
+
+      {/* Info ringkasan */}
+      <div className="mt-2 text-xs sm:text-sm text-gray-300 flex justify-between">
+        <span>Rata-rata: {avg}</span>
+        <span>Min: {min}</span>
+        <span>Max: {max}</span>
+      </div>
     </div>
   );
 }

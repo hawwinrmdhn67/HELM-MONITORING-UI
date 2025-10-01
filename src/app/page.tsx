@@ -7,6 +7,7 @@ import MapComponent from "./components/MapComponent";
 import IncidentTable from "./components/IncidentAlert";
 import MonitoringChart from "./components/MonitoringChart";
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 
 export default function HomePage() {
   const [gpsOnline, setGpsOnline] = useState(0);
@@ -14,11 +15,38 @@ export default function HomePage() {
   const [incidentCount, setIncidentCount] = useState(0);
 
   useEffect(() => {
+=======
+import { useRouter } from "next/navigation";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [gpsOnline, setGpsOnline] = useState(0);
+  const [helmConnected, setHelmConnected] = useState(0);
+  const [incidentCount, setIncidentCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Proteksi login admin
+  useEffect(() => {
+    const isAdmin = localStorage.getItem("isAdmin");
+    if (isAdmin !== "true") {
+      router.push("/login"); 
+    } else {
+      setLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (loading) return; 
+
+>>>>>>> 4e9596d (Update terus jing)
     const fetchData = async () => {
       try {
         const res = await fetch("http://192.168.1.106:3001/api/update-location");
         const data = await res.json();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4e9596d (Update terus jing)
         const values = Object.values(data) as any[];
 
         const gpsFromHp = values.filter(
@@ -44,6 +72,7 @@ export default function HomePage() {
     fetchData();
     const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
+<<<<<<< HEAD
   }, []);
 
   return (
@@ -54,6 +83,17 @@ export default function HomePage() {
       {/* Supaya tidak ketimpa navbar → kasih pt sesuai tinggi navbar */}
       <main className="flex-1 pt-20 p-4 md:p-6 space-y-8 relative z-0">
         {/* Title */}
+=======
+  }, [loading]);
+
+  if (loading) return null; 
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar />
+
+      <main className="flex-1 pt-5 p-4 md:p-6 space-y-8 relative z-0">
+>>>>>>> 4e9596d (Update terus jing)
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -65,6 +105,7 @@ export default function HomePage() {
 
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+<<<<<<< HEAD
           <StatusCard
             title="GPS Tracker"
             value={`${gpsOnline} Online`}
@@ -80,6 +121,11 @@ export default function HomePage() {
             value={`${incidentCount} Active`}
             color="red"
           />
+=======
+          <StatusCard title="GPS Tracker" value={`${gpsOnline} Online`} color="green" />
+          <StatusCard title="Helm Status" value={`${helmConnected} Connected`} color="blue" />
+          <StatusCard title="Incident" value={`${incidentCount} Active`} color="red" />
+>>>>>>> 4e9596d (Update terus jing)
         </div>
 
         {/* Map Section */}

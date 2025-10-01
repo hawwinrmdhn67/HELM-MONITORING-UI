@@ -18,6 +18,7 @@ interface Incident {
 export default function IncidentAlert() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
+
   const normalizeStatus = (status?: string) => {
     if (!status) return "Unknown";
     const s = status.toLowerCase();
@@ -88,17 +89,23 @@ export default function IncidentAlert() {
   }, []);
 
   const statusBadge = (helm_status?: string) =>
-    helm_status === "On"
-      ? "bg-green-500/20 text-green-400"
-      : helm_status === "ALERT"
-      ? "bg-red-500/20 text-red-400 animate-pulse"
-      : "bg-gray-500/20 text-gray-400";
+  helm_status === "On"
+    ? "bg-green-100 text-green-700 border border-green-300"
+    : helm_status === "ALERT"
+    ? "bg-red-100 text-red-700 border border-red-300 animate-pulse"
+    : helm_status === "Off"
+    ? "bg-red-100 text-red-700 border border-red-300"
+    : "bg-gray-100 text-gray-600 border border-gray-300";
 
   const onlineBadge = (online: boolean) =>
-    online ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400";
+    online
+      ? "bg-green-100 text-green-700 border border-green-300"
+      : "bg-red-100 text-red-700 border border-red-300";
 
   const incidentBadge = (incident: boolean) =>
-    incident ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-700/20 text-gray-400";
+    incident
+      ? "bg-yellow-100 text-yellow-700 border border-yellow-300"
+      : "bg-gray-100 text-gray-600 border border-gray-300";
 
   const formatTime = (ts?: number) =>
     ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "-";
@@ -109,37 +116,34 @@ export default function IncidentAlert() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="bg-black/30 backdrop-blur-md border border-white/10 p-4 md:p-6 rounded-2xl shadow-lg space-y-4"
     >
       {loading ? (
-        <p className="text-gray-400">Loading incidents...</p>
+        <p className="text-gray-500">Loading incidents...</p>
       ) : incidents.length === 0 ? (
-        <p className="text-gray-400">Belum ada incident...</p>
+        <p className="text-gray-500">Belum ada incident...</p>
       ) : (
         incidents.map((item) => (
           <div
             key={item.id}
-            className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition 
-              ${item.helm_status === "ALERT" ? "bg-red-500/10 border border-red-500/30" : "bg-white/5"}
+            className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg border transition 
+              ${item.helm_status === "ALERT" ? "bg-red-50 border-red-300" : "bg-gray-50 border-gray-200"}
             `}
           >
             {/* Info utama */}
             <div className="flex flex-col space-y-1">
-              <span className="text-gray-200 font-medium">
-                Helmet {item.id}{" "}
-                <span className="text-gray-200 font-medium">
-                </span>
+              <span className="text-gray-800 font-medium">
+                Helmet {item.id}
               </span>
-              <span className="text-gray-400 text-sm">
+              <span className="text-gray-500 text-sm">
                 ⏱ {formatTime(item.updatedAt)}
               </span>
               {item.lat !== undefined && item.lng !== undefined && (
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-500 text-sm">
                   📍 {item.lat.toFixed(6)}, {item.lng.toFixed(6)}
                 </span>
               )}
               {item.acceleration !== undefined && (
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-500 text-sm">
                   🌀 Acceleration: {item.acceleration.toFixed(2)} m/s²
                 </span>
               )}
@@ -148,21 +152,21 @@ export default function IncidentAlert() {
             {/* Status badges */}
             <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
               <span
-                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${statusBadge(
+                className={`px-3 py-1 rounded-full text-xs md:text-sm font-semibold ${statusBadge(
                   item.helm_status
                 )}`}
               >
                 {item.helm_status}
               </span>
               <span
-                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${onlineBadge(
+                className={`px-3 py-1 rounded-full text-xs md:text-sm font-semibold ${onlineBadge(
                   item.online
                 )}`}
               >
                 {item.online ? "Online" : "Offline"}
               </span>
               <span
-                className={`px-2 py-1 rounded-full text-xs md:text-sm font-semibold ${incidentBadge(
+                className={`px-3 py-1 rounded-full text-xs md:text-sm font-semibold ${incidentBadge(
                   item.incident
                 )}`}
               >

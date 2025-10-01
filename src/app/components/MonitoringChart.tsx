@@ -48,7 +48,7 @@ export default function MonitoringChart() {
           value: latest.acceleration ?? 0,
         };
 
-        setData((prev) => [...prev, newPoint].slice(-10)); 
+        setData((prev) => [...prev, newPoint].slice(-10));
       } catch (err) {
         console.error("Fetch error:", err);
       }
@@ -60,42 +60,47 @@ export default function MonitoringChart() {
   }, []);
 
   const values = data.map((d) => d.value);
-  const avg = values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : "0";
+  const avg = values.length
+    ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+    : "0";
   const max = values.length ? Math.max(...values).toFixed(2) : "0";
   const min = values.length ? Math.min(...values).toFixed(2) : "0";
 
   return (
-    <div className="bg-black/30 backdrop-blur-md border border-white/10 p-4 sm:p-6 rounded-2xl shadow-lg w-full h-[260px] sm:h-[360px] flex flex-col">
-      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+    <div className="bg-white border border-gray-200 p-4 sm:p-6 rounded-2xl shadow-md w-full h-[260px] sm:h-[360px] flex flex-col">
+      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-800">
         Monitoring Chart
       </h2>
 
       <ResponsiveContainer width="100%" height="80%">
-        <LineChart data={data} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+        <LineChart
+          data={data}
+          margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
           <XAxis
             dataKey="time"
-            stroke="#ccc"
+            stroke="#666"
             tick={{ fontSize: 10 }}
             interval="preserveEnd"
           />
-          <YAxis stroke="#ccc" tick={{ fontSize: 10 }}>
+          <YAxis stroke="#666" tick={{ fontSize: 10 }}>
             <Label
               value="Acceleration (m/s²)"
               angle={-90}
               position="insideLeft"
-              style={{ textAnchor: "middle", fill: "#ccc", fontSize: 11 }}
+              style={{ textAnchor: "middle", fill: "#666", fontSize: 11 }}
             />
           </YAxis>
           <Tooltip
-            contentStyle={{ backgroundColor: "#1f2937", borderRadius: "8px" }}
+            contentStyle={{ backgroundColor: "white", borderRadius: "8px", border: "1px solid #ddd", color: "#111" }}
           />
-          <Legend wrapperStyle={{ fontSize: "12px", color: "#fff" }} />
+          <Legend wrapperStyle={{ fontSize: "12px", color: "#333" }} />
           <Line
             type="monotone"
             dataKey="value"
             name="Acceleration"
-            stroke="#60a5fa"
+            stroke="#2563eb"
             strokeWidth={3}
             dot={{ r: 3 }}
             activeDot={{ r: 5 }}
@@ -104,7 +109,7 @@ export default function MonitoringChart() {
       </ResponsiveContainer>
 
       {/* Info ringkasan */}
-      <div className="mt-2 text-xs sm:text-sm text-gray-300 flex justify-between">
+      <div className="mt-2 text-xs sm:text-sm text-gray-600 flex justify-between">
         <span>Rata-rata: {avg}</span>
         <span>Min: {min}</span>
         <span>Max: {max}</span>

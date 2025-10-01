@@ -33,9 +33,8 @@ export default function MapLeaflet() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await fetch("http://192.168.1.106:3001/api/update-location"); // ganti IP PC/server
+        const res = await fetch("http://192.168.1.106:3001/api/update-location");
         const data: Record<string, Location> = await res.json();
-        console.log("Data fetch lokasi:", data);
         setLocations(data);
       } catch (err) {
         console.error("Gagal fetch lokasi:", err);
@@ -54,36 +53,48 @@ export default function MapLeaflet() {
   const center: [number, number] =
     locationsArray.length > 0
       ? [locationsArray[0].lat, locationsArray[0].lng]
-      : [-7.250445, 112.768845];
+      : [-7.250445, 112.768845]; // default Surabaya
 
   return (
-    <MapContainer
-      center={center}
-      zoom={7}
-      style={{ height: "100%", width: "100%" }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; OpenStreetMap contributors"
-      />
-      {locationsArray.map((loc) => (
-        <Marker key={loc.id} position={[loc.lat, loc.lng]}>
-          <Popup>
-            <b>Helm {loc.id}</b> <br />
-            Updated: {new Date(loc.updatedAt).toLocaleTimeString()} <br />
-            Status:{" "}
-            <span style={{ color: loc.status === "Online" ? "green" : "red" }}>
-              {loc.status}
-            </span>
-            <br />
-            {loc.incident && (
-              <span style={{ color: "orange", fontWeight: "bold" }}>
-                ⚠️ Incident Detected!
-              </span>
-            )}
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full h-[400px] md:h-[600px] p-4 sm:p-6">
+      <div className="w-full h-full rounded-xl overflow-hidden">
+        <MapContainer
+          center={center}
+          zoom={7}
+          className="w-full h-full rounded-xl relative z-0"
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+          {locationsArray.map((loc) => (
+            <Marker key={loc.id} position={[loc.lat, loc.lng]}>
+              <Popup>
+                <div className="text-sm">
+                  <b>Helm {loc.id}</b> <br />
+                  Updated: {new Date(loc.updatedAt).toLocaleTimeString()} <br />
+                  Status:{" "}
+                  <span
+                    className={
+                      loc.status === "Online"
+                        ? "text-green-600 font-bold"
+                        : "text-red-600 font-bold"
+                    }
+                  >
+                    {loc.status}
+                  </span>
+                  <br />
+                  {loc.incident && (
+                    <span className="text-orange-500 font-bold">
+                      ⚠️ Incident Detected!
+                    </span>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+    </div>
   );
 }

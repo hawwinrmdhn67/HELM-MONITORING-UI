@@ -21,7 +21,6 @@ const locations: Record<string, Location> = {};
 app.use(cors());
 app.use(express.json());
 
-// ✅ POST: update lokasi/status
 app.post("/api/update-location", (req, res) => {
   const {
     helmet_id,
@@ -49,14 +48,13 @@ app.post("/api/update-location", (req, res) => {
     lng: lng ?? oldData.lng,
     speed: speed ?? oldData.speed,
     description: description || oldData.description,
-    helm_status: helm_status || oldData.helm_status || "Off", // ✅ update dari HP
+    helm_status: helm_status || oldData.helm_status || "Off", 
     incident: oldData.incident ?? false,
     updatedAt: Date.now(),
     source: "HP",
   };
 
   } else if (source === "Arduino") {
-    // Arduino update sensor & incident (sumber utama)
     const isIncident =
       helm_status === "ALERT" ||
       (acceleration ? acceleration > 1.5 : oldData.incident);
@@ -77,7 +75,6 @@ app.post("/api/update-location", (req, res) => {
   res.json({ success: true });
 });
 
-// ✅ GET: ambil semua lokasi
 app.get("/api/update-location", (_req, res) => {
   const now = Date.now();
   const data = Object.fromEntries(
@@ -85,14 +82,13 @@ app.get("/api/update-location", (_req, res) => {
       id,
       {
         ...loc,
-        online: now - loc.updatedAt < 3000, // online kalau update < 3 detik
+        online: now - loc.updatedAt < 3000, 
       },
     ])
   );
   res.json(data);
 });
 
-// ✅ GET: status ringkas (buat card dashboard)
 app.get("/api/status", (_req, res) => {
   const now = Date.now();
   let gpsOnline = 0;

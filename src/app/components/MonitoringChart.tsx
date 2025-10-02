@@ -68,10 +68,6 @@ export default function MonitoringChart() {
 
   return (
     <div className="bg-white border border-gray-200 p-4 sm:p-6 rounded-2xl shadow-md w-full h-[260px] sm:h-[360px] flex flex-col">
-      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-800">
-        Monitoring Chart
-      </h2>
-
       <ResponsiveContainer width="100%" height="80%">
         <LineChart
           data={data}

@@ -10,7 +10,6 @@ interface Location {
   helm_status?: string;
   acceleration?: number;
   speed?: number;
-  description?: string;
   incident?: boolean;
   updatedAt: number;
   source?: "HP" | "Arduino";
@@ -29,7 +28,6 @@ app.post("/api/update-location", (req, res) => {
     helm_status,
     acceleration,
     speed,
-    description,
     source,
   } = req.body;
 
@@ -42,17 +40,16 @@ app.post("/api/update-location", (req, res) => {
   const oldData = locations[helmet_id] || {};
 
   if (source === "HP") {
-  locations[helmet_id] = {
-    ...oldData,
-    lat: lat ?? oldData.lat,
-    lng: lng ?? oldData.lng,
-    speed: speed ?? oldData.speed,
-    description: description || oldData.description,
-    helm_status: helm_status || oldData.helm_status || "Off", 
-    incident: oldData.incident ?? false,
-    updatedAt: Date.now(),
-    source: "HP",
-  };
+    locations[helmet_id] = {
+      ...oldData,
+      lat: lat ?? oldData.lat,
+      lng: lng ?? oldData.lng,
+      speed: speed ?? oldData.speed,
+      helm_status: helm_status || oldData.helm_status || "Off", 
+      incident: oldData.incident ?? false,
+      updatedAt: Date.now(),
+      source: "HP",
+    };
 
   } else if (source === "Arduino") {
     const isIncident =

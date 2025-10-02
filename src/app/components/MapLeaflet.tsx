@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// Konfigurasi ikon leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -19,7 +20,7 @@ interface Location {
   lat: number;
   lng: number;
   updatedAt: number;
-  status: "Online" | "Offline";
+  status: "Online" | "Offline"; // dari helm_status
   incident: boolean;
 }
 
@@ -28,13 +29,13 @@ interface LocationWithId extends Location {
 }
 
 export default function MapLeaflet() {
-  const [locations, setLocations] = useState<Record<string, Location>>({});
+  const [locations, setLocations] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
         const res = await fetch("http://192.168.1.106:3001/api/update-location");
-        const data: Record<string, Location> = await res.json();
+        const data = await res.json();
         setLocations(data);
       } catch (err) {
         console.error("Gagal fetch lokasi:", err);
@@ -46,23 +47,78 @@ export default function MapLeaflet() {
     return () => clearInterval(interval);
   }, []);
 
-  const locationsArray: LocationWithId[] = Object.entries(locations).map(
-    ([id, loc]) => ({ id, ...loc })
-  );
+  // Fungsi konversi helm_status dari Arduino ke Online/Offline
+  const getStatus = (helm_status: string): "Online" | "Offline" =>
+    helm_status === "On" ? "Online" : "Offline";
 
-  const center: [number, number] =
-    locationsArray.length > 0
-      ? [locationsArray[0].lat, locationsArray[0].lng]
-      : [-7.250445, 112.768845]; // default Surabaya
+  // Ambil H01 dari Arduino
+  const h01: LocationWithId = locations["H01"]
+    ? {
+        id: "H01",
+        lat: locations["H01"].lat,
+        lng: locations["H01"].lng,
+        updatedAt: locations["H01"].updatedAt,
+        status: getStatus(locations["H01"].helm_status),
+        incident: locations["H01"].incident,
+      }
+    : {
+        id: "H01",
+        lat: -7.0258667,
+        lng: 112.4788683,
+        updatedAt: Date.now(),
+        status: "Offline",
+        incident: false,
+      };
+
+  // Dummy locations tetap ada
+  const dummyLocations: LocationWithId[] = [
+    {
+      id: "Ayah",
+      lat: -7.981,
+      lng: 112.630,
+      updatedAt: Date.now(),
+      status: "Online",
+      incident: false,
+    },
+    {
+      id: "Ibu",
+      lat: -7.250,
+      lng: 112.768,
+      updatedAt: Date.now(),
+      status: "Offline",
+      incident: false,
+    },
+    {
+      id: "Anak 1",
+      lat: -7.472,
+      lng: 112.445,
+      updatedAt: Date.now(),
+      status: "Online",
+      incident: false,
+    },
+    {
+      id: "Anak 2",
+      lat: -7.555,
+      lng: 112.020,
+      updatedAt: Date.now(),
+      status: "Offline",
+      incident: false,
+    },
+  ];
+
+  // Gabungkan semua locations
+  const locationsArray: LocationWithId[] = [h01, ...dummyLocations];
+
+  // Center map H01
+  const center: [number, number] = [h01.lat, h01.lng];
+
+  // Incident alert
+  const incidentAlerts = locationsArray.filter((loc) => loc.incident);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full h-[400px] md:h-[600px] p-4 sm:p-6">
-      <div className="w-full h-full rounded-xl overflow-hidden">
-        <MapContainer
-          center={center}
-          zoom={7}
-          className="w-full h-full rounded-xl relative z-0"
-        >
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full p-4 sm:p-6">
+      <div className="w-full h-[400px] md:h-[600px] rounded-xl overflow-hidden mb-4">
+        <MapContainer center={center} zoom={8} className="w-full h-full rounded-xl relative z-0">
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap contributors"
@@ -71,7 +127,7 @@ export default function MapLeaflet() {
             <Marker key={loc.id} position={[loc.lat, loc.lng]}>
               <Popup>
                 <div className="text-sm">
-                  <b>Helm {loc.id}</b> <br />
+                  <b>{loc.id}</b> <br />
                   Updated: {new Date(loc.updatedAt).toLocaleTimeString()} <br />
                   Status:{" "}
                   <span
@@ -95,6 +151,17 @@ export default function MapLeaflet() {
           ))}
         </MapContainer>
       </div>
+
+      {/* Notifikasi incident */}
+      {incidentAlerts.length > 0 && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+          {incidentAlerts.map((loc) => (
+            <div key={loc.id}>
+              ⚠️ Incident detected at <b>{loc.id}</b>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

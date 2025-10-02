@@ -67,15 +67,26 @@ export default function IncidentAlert() {
 
         const finalArr = Object.values(merged).map((item) => {
           let status = normalizeStatus(item.helm_status);
-
           if (item.incident) {
             status = "ALERT"; 
           }
-
           return { ...item, helm_status: status };
         });
 
-        setIncidents(finalArr);
+        // Tambahkan data dummy Helm H01 dengan incident di paling bawah
+        const dummyH01: Incident = {
+          id: "H01 Dummy",
+          lat: -7.250000,
+          lng: 112.750000,
+          helm_status: "ALERT",
+          online: true,
+          incident: true,
+          updatedAt: Date.now(),
+          source: "Arduino",
+          acceleration: 3.0,
+        };
+
+        setIncidents([...finalArr, dummyH01]);
       } catch (err) {
         console.error("Failed to fetch incidents:", err);
       } finally {
@@ -89,13 +100,13 @@ export default function IncidentAlert() {
   }, []);
 
   const statusBadge = (helm_status?: string) =>
-  helm_status === "On"
-    ? "bg-green-100 text-green-700 border border-green-300"
-    : helm_status === "ALERT"
-    ? "bg-red-100 text-red-700 border border-red-300 animate-pulse"
-    : helm_status === "Off"
-    ? "bg-red-100 text-red-700 border border-red-300"
-    : "bg-gray-100 text-gray-600 border border-gray-300";
+    helm_status === "On"
+      ? "bg-green-100 text-green-700 border border-green-300"
+      : helm_status === "ALERT"
+      ? "bg-red-100 text-red-700 border border-red-300 animate-pulse"
+      : helm_status === "Off"
+      ? "bg-red-100 text-red-700 border border-red-300"
+      : "bg-gray-100 text-gray-600 border border-gray-300";
 
   const onlineBadge = (online: boolean) =>
     online

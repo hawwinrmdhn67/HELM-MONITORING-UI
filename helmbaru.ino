@@ -11,16 +11,13 @@ const char* serverUrl = "http://192.168.1.106:3001/api/update-location";
 int16_t ax, ay, az;
 float total_acceleration;
 
-#define LED_GREEN 2
-#define LED_YELLOW 4
-#define LED_RED 5
 #define BUZZER 15
 #define RESET_PIN 13 
 
 const float CRASH_THRESHOLD = 2.5; 
-const unsigned long BUZZER_DURATION = 10000UL;        
+const unsigned long BUZZER_DURATION = 10000UL;        // durasi buzzer 10 detik
 const unsigned long SEND_INTERVAL = 2000UL;          
-const unsigned long INCIDENT_AUTO_CLEAR = 5000UL;   
+const unsigned long INCIDENT_AUTO_CLEAR = BUZZER_DURATION; // auto-clear setelah buzzer habis
 
 unsigned long crashStart = 0;
 unsigned long incidentStart = 0;
@@ -34,22 +31,15 @@ const unsigned long RESET_DEBOUNCE = 50UL;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_YELLOW, OUTPUT);
-  pinMode(LED_RED, OUTPUT);
   pinMode(BUZZER, OUTPUT);
   pinMode(RESET_PIN, INPUT_PULLUP); 
-
-  digitalWrite(LED_GREEN, HIGH);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_RED, LOW);
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting WiFi");
   while (WiFi.status() != WL_CONNECTED) { 
     delay(500); Serial.print(".");
   }
-  Serial.println("\n Wi-Fi connected!");
+  Serial.println("\nWi-Fi connected!");
 
   Wire.begin();
   Wire.beginTransmission(MPU6050_ADDR);
@@ -78,39 +68,38 @@ void loop() {
   total_acceleration = sqrt((float)ax*(float)ax + (float)ay*(float)ay + (float)az*(float)az) / 16384.0;
   if (isnan(total_acceleration)) total_acceleration = 0.0;
 
+  // Manual reset incident
   if (checkResetButton()) {
     Serial.println("🛠 Manual reset pressed -> clearing incident");
     clearIncident();
   }
 
+  // Deteksi crash
   if (total_acceleration >= CRASH_THRESHOLD && !incidentActive) {
     incidentActive = true;
     buzzerActive = true;
     crashStart = millis();
     incidentStart = crashStart;
 
-    digitalWrite(LED_GREEN, LOW);
-    digitalWrite(LED_YELLOW, LOW);
-    digitalWrite(LED_RED, HIGH);
-    tone(BUZZER, 1500);
-
+    tone(BUZZER, 2000);
     Serial.printf("Incident detected! acc=%.2f g\n", total_acceleration);
     sendIncidentImmediate(total_acceleration, true);
   }
 
+  // Matikan buzzer setelah BUZZER_DURATION
   if (buzzerActive && millis() - crashStart >= BUZZER_DURATION) {
     buzzerActive = false;
     noTone(BUZZER);
     Serial.println("Buzzer stopped");
-    digitalWrite(LED_RED, LOW);
-    digitalWrite(LED_YELLOW, HIGH);
   }
 
+  // Auto-clear incident setelah durasi buzzer
   if (incidentActive && (millis() - incidentStart >= INCIDENT_AUTO_CLEAR)) {
-    Serial.println("Clearing incident");
+    Serial.println("Clearing incident (after buzzer duration)");
     clearIncident();
   }
 
+  // Kirim data periodik ke server
   if (millis() - lastSend >= SEND_INTERVAL) {
     lastSend = millis();
     sendIncident(total_acceleration, incidentActive);
@@ -122,9 +111,6 @@ void loop() {
 void clearIncident() {
   incidentActive = false;
   buzzerActive = false;
-  digitalWrite(LED_RED, LOW);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_GREEN, HIGH);
   noTone(BUZZER);
   sendIncidentImmediate(total_acceleration, false);
 }

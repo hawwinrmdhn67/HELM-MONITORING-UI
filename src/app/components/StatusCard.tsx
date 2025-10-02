@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 interface StatusCardProps {
   title: string;
   value: string;
-  color: "green" | "blue" | "red";
+  color: "green" | "blue" | "red" | "yellow";
 }
 
 export default function StatusCard({ title, value, color }: StatusCardProps) {
@@ -13,7 +13,9 @@ export default function StatusCard({ title, value, color }: StatusCardProps) {
       ? "border-green-500 text-green-600"
       : color === "blue"
       ? "border-blue-500 text-blue-600"
-      : "border-red-500 text-red-600";
+      : color === "red"
+      ? "border-red-500 text-red-600"
+      : "border-yellow-500 text-yellow-600"; 
 
   return (
     <motion.div

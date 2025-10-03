@@ -43,7 +43,7 @@ export default function RegisterPage() {
       const res = await fetch("http://localhost:3002/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }), // hanya kirim yg dibutuhkan
+        body: JSON.stringify({ username, password }), 
       });
 
       const data = await res.json();

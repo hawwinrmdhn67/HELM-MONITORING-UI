@@ -73,7 +73,6 @@ export default function IncidentAlert() {
           return { ...item, helm_status: status };
         });
 
-        // Tambahkan data dummy Helm H01 dengan incident di paling bawah
         const dummyH01: Incident = {
           id: "H01 Dummy",
           lat: -7.250000,

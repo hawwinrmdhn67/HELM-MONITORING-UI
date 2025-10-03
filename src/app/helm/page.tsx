@@ -29,13 +29,12 @@ export default function HelmPage() {
           })
         );
 
-        // Tambahkan dummy data
         const now = Date.now();
         const dummyLocations: LocationWithId[] = [
-          { id: "Ayah", lat: -7.981, lng: 112.630, updatedAt: now }, // Malang Online
-          { id: "Ibu", lat: -7.250, lng: 112.768, updatedAt: now - 10000 }, // Surabaya Offline
-          { id: "Anak 1", lat: -7.472, lng: 112.445, updatedAt: now }, // Mojokerto Online
-          { id: "Anak 2", lat: -7.555, lng: 112.020, updatedAt: now - 10000 }, // Kediri Offline
+          { id: "Ayah", lat: -7.981, lng: 112.630, updatedAt: now }, 
+          { id: "Ibu", lat: -7.250, lng: 112.768, updatedAt: now - 10000 }, 
+          { id: "Anak 1", lat: -7.472, lng: 112.445, updatedAt: now },
+          { id: "Anak 2", lat: -7.555, lng: 112.020, updatedAt: now - 10000 }, 
         ];
 
         setLocations([...arr, ...dummyLocations]);

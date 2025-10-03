@@ -10,14 +10,16 @@ const char* serverUrl = "http://192.168.1.106:3001/api/update-location";
 #define MPU6050_ADDR 0x68
 int16_t ax, ay, az;
 float total_acceleration;
+float pitch = 0.0;
+float roll = 0.0;
 
 #define BUZZER 15
 #define RESET_PIN 13 
 
 const float CRASH_THRESHOLD = 2.5; 
-const unsigned long BUZZER_DURATION = 10000UL;        // durasi buzzer 10 detik
+const unsigned long BUZZER_DURATION = 10000UL;        
 const unsigned long SEND_INTERVAL = 2000UL;          
-const unsigned long INCIDENT_AUTO_CLEAR = BUZZER_DURATION; // auto-clear setelah buzzer habis
+const unsigned long INCIDENT_AUTO_CLEAR = BUZZER_DURATION;
 
 unsigned long crashStart = 0;
 unsigned long incidentStart = 0;
@@ -65,16 +67,20 @@ bool checkResetButton() {
 
 void loop() {
   readMPU6050();
+  
   total_acceleration = sqrt((float)ax*(float)ax + (float)ay*(float)ay + (float)az*(float)az) / 16384.0;
   if (isnan(total_acceleration)) total_acceleration = 0.0;
 
-  // Manual reset incident
+  pitch = atan2((float)ay, sqrt((float)ax*(float)ax + (float)az*(float)az)) * 180.0 / PI;
+  roll  = atan2(-(float)ax, (float)az) * 180.0 / PI;
+
+  Serial.printf("Acc=%.2f g, Pitch=%.2f, Roll=%.2f\n", total_acceleration, pitch, roll);
+
   if (checkResetButton()) {
     Serial.println("🛠 Manual reset pressed -> clearing incident");
     clearIncident();
   }
 
-  // Deteksi crash
   if (total_acceleration >= CRASH_THRESHOLD && !incidentActive) {
     incidentActive = true;
     buzzerActive = true;
@@ -86,20 +92,17 @@ void loop() {
     sendIncidentImmediate(total_acceleration, true);
   }
 
-  // Matikan buzzer setelah BUZZER_DURATION
   if (buzzerActive && millis() - crashStart >= BUZZER_DURATION) {
     buzzerActive = false;
     noTone(BUZZER);
     Serial.println("Buzzer stopped");
   }
 
-  // Auto-clear incident setelah durasi buzzer
   if (incidentActive && (millis() - incidentStart >= INCIDENT_AUTO_CLEAR)) {
     Serial.println("Clearing incident (after buzzer duration)");
     clearIncident();
   }
 
-  // Kirim data periodik ke server
   if (millis() - lastSend >= SEND_INTERVAL) {
     lastSend = millis();
     sendIncident(total_acceleration, incidentActive);
@@ -126,6 +129,8 @@ void sendIncidentImmediate(float acc, bool isIncident) {
     payload += "\"acceleration\":" + String(acc, 2) + ",";
     payload += "\"helm_status\":\"" + String(isIncident ? "ALERT" : "On") + "\",";
     payload += "\"incident\":" + String(isIncident ? "true" : "false") + ",";
+    payload += "\"pitch\":" + String(pitch, 2) + ",";
+    payload += "\"roll\":" + String(roll, 2) + ",";
     payload += "\"source\":\"Arduino\"";
     payload += "}";
 
@@ -154,6 +159,8 @@ void sendIncident(float acc, bool isIncident) {
     payload += "\"acceleration\":" + String(acc, 2) + ",";
     payload += "\"helm_status\":\"" + String(isIncident ? "ALERT" : "On") + "\",";
     payload += "\"incident\":" + String(isIncident ? "true" : "false") + ",";
+    payload += "\"pitch\":" + String(pitch, 2) + ",";
+    payload += "\"roll\":" + String(roll, 2) + ",";
     payload += "\"source\":\"Arduino\"";
     payload += "}";
 
@@ -180,3 +187,4 @@ void readMPU6050() {
   ay = Wire.read() << 8 | Wire.read();
   az = Wire.read() << 8 | Wire.read();
 }
+

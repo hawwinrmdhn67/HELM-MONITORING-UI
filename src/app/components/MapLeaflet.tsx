@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Konfigurasi ikon leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -20,10 +19,9 @@ interface Location {
   lat: number;
   lng: number;
   updatedAt: number;
-  status: "Online" | "Offline"; // dari helm_status
+  status: "Online" | "Offline";
   incident: boolean;
 }
-
 interface LocationWithId extends Location {
   id: string;
 }
@@ -43,15 +41,13 @@ export default function MapLeaflet() {
     };
 
     fetchLocations();
-    const interval = setInterval(fetchLocations, 1000);
+    const interval = setInterval(fetchLocations, 2000); 
     return () => clearInterval(interval);
   }, []);
 
-  // Fungsi konversi helm_status dari Arduino ke Online/Offline
   const getStatus = (helm_status: string): "Online" | "Offline" =>
     helm_status === "On" ? "Online" : "Offline";
 
-  // Ambil H01 dari Arduino
   const h01: LocationWithId = locations["H01"]
     ? {
         id: "H01",
@@ -70,59 +66,30 @@ export default function MapLeaflet() {
         incident: false,
       };
 
-  // Dummy locations tetap ada
   const dummyLocations: LocationWithId[] = [
-    {
-      id: "Ayah",
-      lat: -7.981,
-      lng: 112.630,
-      updatedAt: Date.now(),
-      status: "Online",
-      incident: false,
-    },
-    {
-      id: "Ibu",
-      lat: -7.250,
-      lng: 112.768,
-      updatedAt: Date.now(),
-      status: "Offline",
-      incident: false,
-    },
-    {
-      id: "Anak 1",
-      lat: -7.472,
-      lng: 112.445,
-      updatedAt: Date.now(),
-      status: "Online",
-      incident: false,
-    },
-    {
-      id: "Anak 2",
-      lat: -7.555,
-      lng: 112.020,
-      updatedAt: Date.now(),
-      status: "Offline",
-      incident: false,
-    },
+    { id: "Ayah", lat: -7.981, lng: 112.63, updatedAt: Date.now(), status: "Online", incident: false },
+    { id: "Ibu", lat: -7.25, lng: 112.768, updatedAt: Date.now(), status: "Offline", incident: false },
+    { id: "Anak 1", lat: -7.472, lng: 112.445, updatedAt: Date.now(), status: "Online", incident: false },
+    { id: "Anak 2", lat: -7.555, lng: 112.02, updatedAt: Date.now(), status: "Offline", incident: false },
   ];
 
-  // Gabungkan semua locations
   const locationsArray: LocationWithId[] = [h01, ...dummyLocations];
-
-  // Center map H01
   const center: [number, number] = [h01.lat, h01.lng];
-
-  // Incident alert
   const incidentAlerts = locationsArray.filter((loc) => loc.incident);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full p-4 sm:p-6">
-      <div className="w-full h-[400px] md:h-[600px] rounded-xl overflow-hidden mb-4">
-        <MapContainer center={center} zoom={8} className="w-full h-full rounded-xl relative z-0">
+    <div className="w-full">
+      <div className="w-full h-[400px] md:h-[600px] rounded-xl overflow-hidden shadow">
+        <MapContainer
+          center={center}
+          zoom={8}
+          className="w-full h-full rounded-xl"
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap contributors"
           />
+
           {locationsArray.map((loc) => (
             <Marker key={loc.id} position={[loc.lat, loc.lng]}>
               <Popup>
@@ -152,9 +119,8 @@ export default function MapLeaflet() {
         </MapContainer>
       </div>
 
-      {/* Notifikasi incident */}
       {incidentAlerts.length > 0 && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+        <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
           {incidentAlerts.map((loc) => (
             <div key={loc.id}>
               ⚠️ Incident detected at <b>{loc.id}</b>

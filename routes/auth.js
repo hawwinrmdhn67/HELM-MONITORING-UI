@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const db = require("../db");
 
 const router = express.Router();
-const JWT_SECRET = "salam_olahraga"; // ganti dengan secret yg lebih kuat
+const JWT_SECRET = "salam_olahraga"; 
 
 // Register
 router.post("/register", async (req, res) => {

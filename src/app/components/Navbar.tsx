@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -42,7 +41,17 @@ export default function Navbar() {
     });
   };
 
-  const menuLinks = ["Dashboard", "GPS", "Helm", "Incident"];
+  const menuLinks = [
+    { name: "Dashboard", href: "/" },
+    { name: "GPS", href: "/gps" },
+    { name: "Helm", href: "/helm" },
+    { name: "Incident", href: "/incident" },
+    { name: "3D Model", href: "/3d-model" }, 
+  ];
+
+  const handleMenuClick = (link: any) => {
+    router.push(link.href);
+  };
 
   return (
     <>
@@ -53,20 +62,19 @@ export default function Navbar() {
         className="bg-white shadow-md border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between sticky top-0 z-50"
       >
         <h1 className="text-lg md:text-xl font-bold text-gray-800">
-          Monitoring Helm
+          Helm Safetronic
         </h1>
 
-        {/* Menu Desktop */}
         <div className="hidden md:flex space-x-4 items-center">
           {isAdmin &&
-            menuLinks.map((page) => (
-              <Link
-                key={page}
-                href={`/${page.toLowerCase() === "dashboard" ? "" : page.toLowerCase()}`}
+            menuLinks.map((link) => (
+              <button
+                key={link.name}
+                onClick={() => handleMenuClick(link)}
                 className="px-3 py-2 text-sm md:text-base rounded-lg text-gray-700 hover:bg-gray-100 transition"
               >
-                {page}
-              </Link>
+                {link.name}
+              </button>
             ))}
           {isAdmin ? (
             <button
@@ -76,16 +84,15 @@ export default function Navbar() {
               Logout
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              onClick={() => router.push("/login")}
               className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
               Login
-            </Link>
+            </button>
           )}
         </div>
 
-        {/* Hamburger Menu (Mobile) */}
         <button
           className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
           onClick={() => setIsOpen(!isOpen)}
@@ -94,7 +101,6 @@ export default function Navbar() {
         </button>
       </motion.nav>
 
-      {/* Dropdown Mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -105,15 +111,17 @@ export default function Navbar() {
             className="md:hidden bg-white shadow-lg border-b border-gray-200 flex flex-col px-6 py-4 space-y-4"
           >
             {isAdmin &&
-              menuLinks.map((page) => (
-                <Link
-                  key={page}
-                  href={`/${page.toLowerCase() === "dashboard" ? "" : page.toLowerCase()}`}
-                  onClick={() => setIsOpen(false)}
+              menuLinks.map((link) => (
+                <button
+                  key={link.name}
+                  onClick={() => {
+                    setIsOpen(false);
+                    handleMenuClick(link);
+                  }}
                   className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
                 >
-                  {page}
-                </Link>
+                  {link.name}
+                </button>
               ))}
             {isAdmin ? (
               <button
@@ -126,13 +134,15 @@ export default function Navbar() {
                 Logout
               </button>
             ) : (
-              <Link
-                href="/login"
-                onClick={() => setIsOpen(false)}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push("/login");
+                }}
                 className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
               >
                 Login
-              </Link>
+              </button>
             )}
           </motion.div>
         )}

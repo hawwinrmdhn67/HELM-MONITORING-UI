@@ -69,7 +69,7 @@ export default function LoginPage() {
         {/* Kiri - Card Foto */}
         <div className="hidden md:flex md:w-1/2 bg-gray-100 items-center justify-center">
           <img
-            src="/img/helm1.webp"
+            src="/img/kocheng.jpeg"
             alt="Helm Monitoring"
             className="object-cover w-full h-full"
           />

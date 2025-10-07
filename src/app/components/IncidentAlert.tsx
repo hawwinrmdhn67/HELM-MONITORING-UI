@@ -73,19 +73,55 @@ export default function IncidentAlert() {
           return { ...item, helm_status: status };
         });
 
-        const dummyH01: Incident = {
-          id: "H01 Dummy",
-          lat: -7.250000,
-          lng: 112.750000,
-          helm_status: "ALERT",
-          online: true,
-          incident: true,
-          updatedAt: Date.now(),
-          source: "Arduino",
-          acceleration: 3.0,
-        };
+        const now = Date.now();
+        const dummyIncidents: Incident[] = [
+          {
+            id: "Ayah",
+            lat: -7.981,
+            lng: 112.630,
+            helm_status: "ALERT",
+            online: true,
+            incident: true,
+            updatedAt: now,
+            source: "Arduino",
+            acceleration: 3.0,
+          },
+          {
+            id: "Ibu",
+            lat: -7.250,
+            lng: 112.768,
+            helm_status: "On",
+            online: true,
+            incident: false,
+            updatedAt: now - 5000,
+            source: "HP",
+            acceleration: 1.2,
+          },
+          {
+            id: "Anak 1",
+            lat: -7.472,
+            lng: 112.445,
+            helm_status: "Off",
+            online: false,
+            incident: false,
+            updatedAt: now - 10000,
+            source: "Arduino",
+            acceleration: 0,
+          },
+          {
+            id: "Anak 2",
+            lat: -7.555,
+            lng: 112.020,
+            helm_status: "On",
+            online: false,  
+            incident: false,
+            updatedAt: now - 15000,
+            source: "HP",
+            acceleration: 2.5,
+          },
+        ];
 
-        setIncidents([...finalArr, dummyH01]);
+        setIncidents([...finalArr, ...dummyIncidents]);
       } catch (err) {
         console.error("Failed to fetch incidents:", err);
       } finally {

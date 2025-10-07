@@ -45,12 +45,14 @@ export default function HomePage() {
     { name: "Anak 2", helm_status: "Off", online: false, lat: -7.555, lng: 112.02 },
   ]);
 
+  // Redirect jika bukan admin
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
     if (isAdmin !== "true") router.push("/login");
     else setLoading(false);
   }, [router]);
 
+  // Fetch data lokasi dan status helm
   useEffect(() => {
     if (loading) return;
 
@@ -66,18 +68,20 @@ export default function HomePage() {
 
         if (data["H01"]) {
           const h01 = data["H01"];
-          setFamilyData(prev => {
-            const newFamily = [...prev];
-            newFamily[0] = {
-              name: "Helm H01",
-              helm_status: h01.helm_status === "ALERT" ? "Off" : (h01.helm_status || "Off"),
-              online: h01.online || false,
-              incident: h01.incident || false,
-              lat: h01.lat || prev[0].lat,
-              lng: h01.lng || prev[0].lng,
-            };
-            return newFamily;
-          });
+          setFamilyData(prev =>
+            prev.map(member =>
+              member.name === "Helm H01"
+                ? {
+                    ...member,
+                    helm_status: h01.helm_status === "ALERT" ? "Off" : (h01.helm_status || "Off"),
+                    online: h01.online || false,
+                    incident: h01.incident || false,
+                    lat: h01.lat || member.lat,
+                    lng: h01.lng || member.lng,
+                  }
+                : member
+            )
+          );
         }
       } catch (err) {
         console.error("Gagal fetch lokasi:", err);
@@ -85,33 +89,56 @@ export default function HomePage() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 1000);
+    const interval = setInterval(fetchData, 3000); 
     return () => clearInterval(interval);
   }, [loading]);
 
   if (loading) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 pt-5 p-4 md:p-6 space-y-8 relative z-0">
-        <motion.h1
+      {/* Hero Section */}
+      <div
+        className="relative w-full min-h-[400px] md:min-h-[500px] flex items-center justify-center px-6 md:px-16"
+        style={{
+          backgroundImage: `url('/img/jalan.jpeg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/10"></div>
+
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-2xl md:text-3xl font-bold text-gray-800"
+          transition={{ duration: 0.8 }}
+          className="relative z-10 max-w-3xl w-full text-center flex flex-col gap-4"
         >
-          Dashboard Monitoring
-        </motion.h1>
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight md:leading-snug text-white drop-shadow-[3px_3px_6px_rgba(0,0,0,0.8)] font-montserrat">
+            Helm Safetronic
+          </h1>
+          <p className="text-lg md:text-2xl font-semibold text-white drop-shadow-[2px_2px_4px_rgba(0,0,0,0.7)] max-w-2xl mx-auto font-montserrat">
+            Pantau status GPS, helm, dan insiden keluarga anda secara real-time.
+          </p>
+        </motion.div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatusCard title="GPS Tracker" value={`${gpsOnline} Online`} color="green" />
-          <StatusCard title="Helm Status" value={`${helmConnected} Connected`} color="blue" />
-          <StatusCard title="Incident" value={`${incidentCount} Active`} color="red" />
-          <StatusCard title="Family Helm" value={`${familyData.length} Members`} color="yellow" />
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-6 space-y-8 bg-gray-50">
+        {/* Status Cards */}
+        <div>
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">Status Card</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <StatusCard title="GPS Tracker" value={`${gpsOnline} Online`} color="green" />
+            <StatusCard title="Helm Status" value={`${helmConnected} Connected`} color="blue" />
+            <StatusCard title="Incident" value={`${incidentCount} Active`} color="red" />
+            <StatusCard title="Family Helm" value={`${familyData.length} Members`} color="yellow" />
+          </div>
         </div>
 
+        {/* Family Helm */}
         <section>
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Family Helm</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -120,10 +147,18 @@ export default function HomePage() {
                 key={idx}
                 onClick={() => {
                   setSelectedMember(member);
-                  mapSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+                  if (mapSectionRef.current) {
+                    const top = mapSectionRef.current.getBoundingClientRect().top + window.scrollY - 80;
+                    window.scrollTo({ top, behavior: "smooth" });
+                  }
                 }}
-                className="p-4 border rounded-xl shadow-sm flex flex-col items-center bg-white relative cursor-pointer hover:shadow-md transition"
+                className={`p-4 border rounded-xl shadow-sm flex flex-col items-center bg-white relative cursor-pointer hover:shadow-md hover:scale-105 transition-transform ${
+                  member.incident ? "blink-red" : ""
+                }`}
               >
+                {member.incident && (
+                  <span className="absolute top-2 right-2 text-orange-500 font-bold text-sm">⚠️</span>
+                )}
                 <GiHelmet
                   size={36}
                   className={`mb-2 ${member.helm_status === "On" ? "text-green-600" : "text-gray-400"}`}
@@ -135,12 +170,12 @@ export default function HomePage() {
                 <p className={`mt-1 text-sm ${member.online ? "text-green-500" : "text-red-500"}`}>
                   {member.online ? "Online" : "Offline"}
                 </p>
-                {member.incident && <span className="text-orange-500 font-bold">⚠️ Incident Detected!</span>}
               </div>
             ))}
           </div>
         </section>
 
+        {/* Map */}
         <section ref={mapSectionRef} className="relative z-0">
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Live GPS Tracking</h2>
           <div className="rounded-2xl border border-gray-200 shadow-md overflow-hidden relative z-0">
@@ -148,11 +183,13 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Incident Logs */}
         <section>
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Incident Logs</h2>
           <IncidentTable />
         </section>
 
+        {/* Monitoring Chart */}
         <section>
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Monitoring Chart</h2>
           <MonitoringChart />

@@ -31,10 +31,10 @@ export default function HelmPage() {
 
         const now = Date.now();
         const dummyLocations: LocationWithId[] = [
-          { id: "Ayah", lat: -7.981, lng: 112.630, updatedAt: now }, 
-          { id: "Ibu", lat: -7.250, lng: 112.768, updatedAt: now - 10000 }, 
+          { id: "Ayah", lat: -7.981, lng: 112.630, updatedAt: now },
+          { id: "Ibu", lat: -7.250, lng: 112.768, updatedAt: now - 10000 },
           { id: "Anak 1", lat: -7.472, lng: 112.445, updatedAt: now },
-          { id: "Anak 2", lat: -7.555, lng: 112.020, updatedAt: now - 10000 }, 
+          { id: "Anak 2", lat: -7.555, lng: 112.020, updatedAt: now - 10000 },
         ];
 
         setLocations([...arr, ...dummyLocations]);
@@ -48,13 +48,13 @@ export default function HelmPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const status = (loc: LocationWithId) => {
-    const diff = Date.now() - loc.updatedAt;
-    return diff < 3000 ? "Online" : "Offline";
-  };
+  const statusBadge = (online: boolean) =>
+    online
+      ? "bg-green-100 text-green-700 border border-green-300"
+      : "bg-red-100 text-red-700 border border-red-300";
 
   const formatTime = (timestamp: number) =>
-    new Date(timestamp).toLocaleTimeString();
+    new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -82,27 +82,19 @@ export default function HelmPage() {
             locations.map((loc) => (
               <div
                 key={loc.id}
-                className="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                className="flex justify-between items-start md:items-center p-4 bg-gray-50 border border-gray-200 rounded-lg"
               >
-                <div className="flex flex-col">
-                  <span className="text-gray-800 font-medium">
-                    Helm {loc.id}
-                  </span>
-                  <span className="text-gray-500 text-sm">
-                    Updated: {formatTime(loc.updatedAt)}
-                  </span>
-                  <span className="text-gray-500 text-sm">
-                    📍 {loc.lat.toFixed(6)}, {loc.lng.toFixed(6)}
-                  </span>
+                <div className="flex flex-col space-y-1">
+                  <span className="text-gray-800 font-medium">Helm {loc.id}</span>
+                  <span className="text-gray-500 text-sm">⏱ {formatTime(loc.updatedAt)}</span>
+                  <span className="text-gray-500 text-sm">📍 {loc.lat.toFixed(6)}, {loc.lng.toFixed(6)}</span>
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    status(loc) === "Online"
-                      ? "bg-green-100 text-green-700 border border-green-300"
-                      : "bg-red-100 text-red-700 border border-red-300"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-semibold ${statusBadge(
+                    Date.now() - loc.updatedAt < 3000
+                  )}`}
                 >
-                  {status(loc)}
+                  {Date.now() - loc.updatedAt < 3000 ? "Online" : "Offline"}
                 </span>
               </div>
             ))

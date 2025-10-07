@@ -1,2 +1,17 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
+
+@keyframes blink {
+  0%, 50%, 100% {
+    border-color: red;
+    background-color: #ffe5e5;
+  }
+  25%, 75% {
+    border-color: darkred;
+    background-color: #ffcccc;
+  }
+}
+
+.blink-red {
+  animation: blink 1s infinite;
+}

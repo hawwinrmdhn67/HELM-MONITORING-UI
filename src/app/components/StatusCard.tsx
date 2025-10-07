@@ -1,9 +1,8 @@
-// components/StatusCard.tsx
 import { motion } from "framer-motion";
 
 interface StatusCardProps {
   title: string;
-  value: string;
+  value: string | React.ReactNode;
   color: "green" | "blue" | "red" | "yellow";
 }
 

@@ -7,6 +7,9 @@ const char* ssid = "Anzu - NET";
 const char* password = "hawwin67";
 const char* serverUrl = "http://192.168.1.106:3001/api/update-location";
 
+String BOT_TOKEN = "8357169282:AAGfyVo2L2MFlYoGcQ2-6V6jAX0W4mElVAI"; 
+String CHAT_ID = "5472715533";     
+
 #define MPU6050_ADDR 0x68
 int16_t ax, ay, az;
 float total_acceleration;
@@ -16,17 +19,17 @@ float roll = 0.0;
 #define BUZZER 15
 #define RESET_PIN 13 
 
-const float CRASH_THRESHOLD = 2.5; 
-const unsigned long BUZZER_DURATION = 10000UL;        
-const unsigned long SEND_INTERVAL = 2000UL;          
+const float CRASH_THRESHOLD = 2.5;
+const unsigned long BUZZER_DURATION = 10000UL;
+const unsigned long SEND_INTERVAL = 2000UL;
 const unsigned long INCIDENT_AUTO_CLEAR = BUZZER_DURATION;
 
 unsigned long crashStart = 0;
 unsigned long incidentStart = 0;
 unsigned long lastSend = 0;
 
-bool buzzerActive = false;     
-bool incidentActive = false;   
+bool buzzerActive = false;
+bool incidentActive = false;
 
 unsigned long lastResetPress = 0;
 const unsigned long RESET_DEBOUNCE = 50UL;
@@ -34,40 +37,44 @@ const unsigned long RESET_DEBOUNCE = 50UL;
 void setup() {
   Serial.begin(115200);
   pinMode(BUZZER, OUTPUT);
-  pinMode(RESET_PIN, INPUT_PULLUP); 
+  pinMode(RESET_PIN, INPUT_PULLUP);
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting WiFi");
-  while (WiFi.status() != WL_CONNECTED) { 
-    delay(500); Serial.print(".");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
   }
   Serial.println("\nWi-Fi connected!");
 
   Wire.begin();
   Wire.beginTransmission(MPU6050_ADDR);
-  Wire.write(0x6B); 
-  Wire.write(0); 
+  Wire.write(0x6B);
+  Wire.write(0);
   Wire.endTransmission(true);
   delay(100);
 }
 
-bool checkResetButton() {
-  if (digitalRead(RESET_PIN) == LOW) {
-    unsigned long now = millis();
-    if (now - lastResetPress > RESET_DEBOUNCE) {
-      lastResetPress = now;
-      delay(20);
-      if (digitalRead(RESET_PIN) == LOW) {
-        return true;
-      }
+void sendTelegramMessage(String message) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    String url = "https://api.telegram.org/bot" + BOT_TOKEN +
+                 "/sendMessage?chat_id=" + CHAT_ID +
+                 "&text=" + message;
+    http.begin(url);
+    int httpCode = http.GET();
+    if (httpCode > 0) {
+      Serial.println("Telegram message sent!");
+    } else {
+      Serial.println("Failed to send Telegram message");
     }
+    http.end();
   }
-  return false;
 }
 
 void loop() {
   readMPU6050();
-  
+
   total_acceleration = sqrt((float)ax*(float)ax + (float)ay*(float)ay + (float)az*(float)az) / 16384.0;
   if (isnan(total_acceleration)) total_acceleration = 0.0;
 
@@ -89,7 +96,9 @@ void loop() {
 
     tone(BUZZER, 2000);
     Serial.printf("Incident detected! acc=%.2f g\n", total_acceleration);
+
     sendIncidentImmediate(total_acceleration, true);
+    sendTelegramMessage("Helm terdeteksi jatuh! Acc: " + String(total_acceleration, 2) + "g");
   }
 
   if (buzzerActive && millis() - crashStart >= BUZZER_DURATION) {
@@ -108,7 +117,7 @@ void loop() {
     sendIncident(total_acceleration, incidentActive);
   }
 
-  delay(50); 
+  delay(50);
 }
 
 void clearIncident() {
@@ -116,6 +125,7 @@ void clearIncident() {
   buzzerActive = false;
   noTone(BUZZER);
   sendIncidentImmediate(total_acceleration, false);
+  sendTelegramMessage("Insiden telah direset. Helm kembali normal.");
 }
 
 void sendIncidentImmediate(float acc, bool isIncident) {
@@ -178,6 +188,20 @@ void sendIncident(float acc, bool isIncident) {
   }
 }
 
+bool checkResetButton() {
+  if (digitalRead(RESET_PIN) == LOW) {
+    unsigned long now = millis();
+    if (now - lastResetPress > RESET_DEBOUNCE) {
+      lastResetPress = now;
+      delay(20);
+      if (digitalRead(RESET_PIN) == LOW) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 void readMPU6050() {
   Wire.beginTransmission(MPU6050_ADDR);
   Wire.write(0x3B);
@@ -187,4 +211,3 @@ void readMPU6050() {
   ay = Wire.read() << 8 | Wire.read();
   az = Wire.read() << 8 | Wire.read();
 }
-

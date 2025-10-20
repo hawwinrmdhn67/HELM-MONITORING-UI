@@ -35,7 +35,7 @@ function BikeWithStreet({ helmetId }: { helmetId: string }) {
   const groupRef = useRef<THREE.Group>(null);
   const modelRef = useRef<THREE.Group>(null);
 
-  const { scene } = useGLTF("/models/motorcycle.glb")
+  const { scene } = useGLTF("/models/helm.glb")
 
   const { pitch, roll } = useHelmetData(helmetId);
 

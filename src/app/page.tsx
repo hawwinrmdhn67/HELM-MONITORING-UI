@@ -9,6 +9,7 @@ import IncidentTable from "./components/IncidentAlert";
 import MonitoringChart from "./components/MonitoringChart";
 import { GiHelmet } from "react-icons/gi";
 import { motion } from "framer-motion";
+import ActivitySummary from "./components/ActivitySummary";
 
 interface FamilyMember {
   name: string;
@@ -189,7 +190,13 @@ export default function HomePage() {
           <IncidentTable />
         </section>
 
-        {/* Monitoring Chart */}
+        {/* Activity Summary */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">Activity Summary</h2>
+          <ActivitySummary />
+        </section>
+
+        {/* Monitoting Chart */}
         <section>
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Monitoring Chart</h2>
           <MonitoringChart />

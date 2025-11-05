@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛰️ HELM MONITORING UI
 
-## Getting Started
+HELM MONITORING UI adalah aplikasi berbasis web yang digunakan untuk **memantau sistem Helm** secara interaktif melalui **dashboard visual 2D dan 3D**.  
+Proyek ini dibangun menggunakan **Next.js (React + TypeScript)** dengan integrasi **Leaflet Maps**, **Three.js**, dan **Chart.js** untuk visualisasi data.
 
-First, run the development server:
+---
 
+## 🚀 Fitur Utama
+
+- 📍 **Peta Interaktif (Leaflet)** — Menampilkan posisi GPS perangkat atau node Helm.  
+- 🧭 **Monitoring 3D (Three.js)** — Menampilkan model 3D untuk pemantauan visual sistem.  
+- 📊 **Grafik Real-time** — Statistik aktivitas dan data sensor ditampilkan dalam grafik dinamis.  
+- ⚙️ **Sistem Login & Register** — Menggunakan autentikasi JWT dengan enkripsi `bcryptjs`.  
+- 🔔 **Incident & Alert System** — Menampilkan peringatan kejadian atau status abnormal sistem.  
+- 💾 **Koneksi Database MySQL** — Menyimpan data aktivitas, pengguna, dan status perangkat.  
+- 🤖 **Integrasi Telegram Bot (opsional)** — Mengirimkan notifikasi otomatis ke Telegram.  
+
+---
+
+## 🧩 Teknologi yang Digunakan
+
+| Kategori | Teknologi |
+|-----------|------------|
+| **Frontend Framework** | [Next.js 15](https://nextjs.org/) + React 19 |
+| **Bahasa** | TypeScript |
+| **UI & Animasi** | Tailwind CSS, Framer Motion, Lucide React |
+| **Visualisasi** | Recharts, React-Chartjs-2, Three.js, Leaflet |
+| **Backend API** | Express.js |
+| **Database** | MySQL (via mysql2) |
+| **Autentikasi** | JWT + BcryptJS |
+| **Notifikasi** | SweetAlert2 + (opsional) Telegram Bot |
+| **Real-time** | WebSocket (`ws` library) |
+
+---
+
+## 📂 Struktur Folder
+
+HELM-MONITORING-UI/
+│
+├── src/
+│ ├── app/
+│ │ ├── 3d-model/
+│ │ ├── baterai/
+│ │ ├── gps/
+│ │ ├── helm/
+│ │ ├── incident/
+│ │ ├── login/
+│ │ ├── register/
+│ │ ├── components/
+│ │ │ ├── MapLeaflet.tsx
+│ │ │ ├── MonitoringChart.tsx
+│ │ │ ├── Navbar.tsx
+│ │ │ ├── StatusCard.tsx
+│ │ │ ├── ThreeDModel.tsx
+│ │ └── ...
+│ │
+│ └── styles/
+│ ├── globals.css
+│ ├── layout.tsx
+│
+├── server.js # Backend API (Express + MySQL)
+├── db.js # Koneksi Database
+├── bot_telegram/ # Folder bot Telegram opsional
+├── tabel.sql # Struktur database
+├── next.config.ts
+├── package.json
+└── tsconfig.json
+
+
+---
+
+## ⚙️ Instalasi & Menjalankan Proyek
+
+### 1️⃣ Clone Repository
 ```bash
+git clone https://github.com/hawwinrmdhn67/HELM-MONITORING-UI.git
+cd HELM-MONITORING-UI
+npm install
+
+Setup Environment
+
+Buat file .env.local di root proyek dan isi dengan konfigurasi seperti:
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=helm_monitoring
+JWT_SECRET=your_secret_key
+TELEGRAM_TOKEN=your_bot_token
+
+Jalankan Server
+
+# Jalankan backend (Express)
+node server.js (untuk mysql nya)
+npx ts-node server.ts (untuk mengambil data status lokasi)
+
+# Jalankan frontend (Next.js)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Kemudian buka di browser:
+http://localhost:3000

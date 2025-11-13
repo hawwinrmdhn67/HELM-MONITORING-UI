@@ -76,6 +76,8 @@ HELM-MONITORING-UI/
 git clone https://github.com/hawwinrmdhn67/HELM-MONITORING-UI.git
 cd HELM-MONITORING-UI
 npm install
+npm install express cors
+npm install -D @types/express @types/cors
 
 Setup Environment
 

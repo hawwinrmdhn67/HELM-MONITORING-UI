@@ -6,7 +6,6 @@ const db = require("../db");
 const router = express.Router();
 const JWT_SECRET = "salam_olahraga"; 
 
-// Register
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
@@ -25,7 +24,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -41,7 +39,6 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Password salah" });
     }
 
-    // Buat token
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: "1h" });
 
     res.json({ message: "Login berhasil", token, user: { id: user.id, username: user.username } });

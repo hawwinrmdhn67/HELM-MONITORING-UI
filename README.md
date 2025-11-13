@@ -79,16 +79,6 @@ npm install
 npm install express cors
 npm install -D @types/express @types/cors
 
-Setup Environment
-
-Buat file .env.local di root proyek dan isi dengan konfigurasi seperti:
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=helm_monitoring
-JWT_SECRET=your_secret_key
-TELEGRAM_TOKEN=your_bot_token
-
 Jalankan Server
 
 # Jalankan backend (Express)

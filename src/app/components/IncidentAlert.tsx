@@ -31,7 +31,7 @@ export default function IncidentAlert() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://192.168.1.106:3001/api/update-location");
+        const res = await fetch("http://10.253.130.20:3001/api/update-location");
         const data = await res.json();
         const merged: Record<string, Incident> = {};
 

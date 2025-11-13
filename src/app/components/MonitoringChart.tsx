@@ -24,7 +24,7 @@ export default function MonitoringChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://192.168.1.106:3001/api/update-location");
+        const res = await fetch("http://10.253.130.20:3001/api/update-location");
         const json = await res.json();
         const entries = Object.values(json) as any[];
         if (entries.length === 0) return;

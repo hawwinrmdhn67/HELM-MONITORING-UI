@@ -4,7 +4,6 @@ import cors from "cors";
 const app = express();
 const PORT = 3001;
 
-// Interface data helmet
 interface Location {
   lat?: number;
   lng?: number;
@@ -18,13 +17,11 @@ interface Location {
   source?: "HP" | "Arduino";
 }
 
-// Menyimpan data semua helmet
 const locations: Record<string, Location> = {};
 
 app.use(cors());
 app.use(express.json());
 
-// Endpoint untuk Arduino / HP mengirim data
 app.post("/api/update-location", (req, res) => {
   const {
     helmet_id,
@@ -80,7 +77,6 @@ app.post("/api/update-location", (req, res) => {
   res.json({ success: true });
 });
 
-// Endpoint untuk frontend polling semua data helmet
 app.get("/api/update-location", (_req, res) => {
   const now = Date.now();
   const data = Object.fromEntries(
@@ -88,14 +84,13 @@ app.get("/api/update-location", (_req, res) => {
       id,
       {
         ...loc,
-        online: now - loc.updatedAt < 3000, // online jika update terakhir < 3 detik
+        online: now - loc.updatedAt < 3000, 
       },
     ])
   );
   res.json(data);
 });
 
-// Endpoint status jumlah device online
 app.get("/api/status", (_req, res) => {
   const now = Date.now();
   let gpsOnline = 0;
